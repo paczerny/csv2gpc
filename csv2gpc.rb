@@ -191,6 +191,7 @@ records.each do |record|
 	protiucet_kod_banky = record[:protiucet][/^[0-9]+\/([0-9]+)$/, 1]
 	protiucet_kod_banky = '' if protiucet_kod_banky.nil?
 
+	record[:castka] = format("%.2f", record[:castka].gsub(',','.'))
 	castka = record[:castka][/-?([0-9\.\,]+)$/, 1].gsub('.', '').gsub(',', '').rjust(12, '0')
 
 	debet_kredit = '2'
