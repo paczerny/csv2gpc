@@ -6,30 +6,21 @@ Ruby scripts for converting bank statement CSV exports into the GPC (ABO) format
 
 - Supports major Czech banks: **CSOB, KB, Moneta, Raiffeisenbank**.
 - Generates GPC (ABO) files with unique record hashes.
-- Handles character encoding conversion (CP1250 to UTF-8) via shell wrapper.
+- Handles character encoding conversion (e.g., CP1250 to UTF-8) natively via Ruby and configuration.
 
 ## Usage
 
 ### CSV to GPC Conversion
 
-1.  **Configure the script:** Open `csv2gpc.rb` and edit the `USER SETUP` section to set your bank, account name, and account number.
+1.  **Configure the script:** Open `config.yml` and set your bank, account name, account number, and encodings (input/output).
 2.  **Run the conversion:**
     ```bash
     ruby csv2gpc.rb input_file.csv output_file.gpc
     ```
 
-### Using the Shell Wrapper (Recommended for Windows CSVs)
-
-If your CSV file is in CP1250 encoding:
-```bash
-./csv2gpc.sh input_file.csv
-```
-This will automatically handle the encoding conversion and generate `input_file.gpc`.
-
 ## Prerequisites
 
 - Ruby
-- `iconv` (for the shell script)
 
 ## Documentation
 

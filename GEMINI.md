@@ -10,28 +10,20 @@ The project provides tools to bridge the gap between bank CSV exports and accoun
 - **Ruby**: The primary language for conversion logic.
 - **CSV Library**: Used for parsing bank exports.
 - **Digest/SHA256**: Used for generating unique record identifiers.
-- **iconv**: (Via shell script) for handling character encoding (CP1250 to UTF-8).
+- **YAML**: For externalized configuration of bank formats and account details.
 
 ## Key Scripts and Tools
 
 ### `csv2gpc.rb`
 The main conversion script for CSV files.
 - **Supported Banks:** CSOB, KB (Komerční banka), Moneta, Raiffeisenbank.
-- **Manual Configuration Required:** Before running, you must edit the "USER SETUP" section in the script to:
-    1.  Select the bank format (e.g., `field_ids = Moneta`).
-    2.  Set the account name (`nazev_uctu`).
-    3.  Set the account number (`cislo_uctu`).
-- **Usage:** `ruby csv2gpc.rb <input_file.csv> <output_file.gpc>`
-
-### `csv2gpc.sh`
-A shell wrapper that handles encoding conversion.
-- **Purpose:** Converts input from CP1250 (common in Czech Windows environments) to UTF-8, runs `csv2gpc.rb`, and then converts the resulting GPC back to CP1250.
-- **Usage:** `./csv2gpc.sh <filename.csv>` (Generates `<filename>.gpc`).
-- **Limitation:** Does not support filenames with spaces.
+- **Configuration:** Reads from `config.yml` (or an optional path as 3rd argument).
+- **Encoding Handling:** Natively handles input and output encodings (e.g., CP1250, UTF-8) as specified in the configuration.
+- **Usage:** `ruby csv2gpc.rb <input_file.csv> <output_file.gpc> [config.yml]`
 
 ## Development Conventions
 
-- **Encoding:** The Ruby scripts themselves expect UTF-8 input. Use the shell wrapper if your source files are in CP1250.
+- **Encoding:** Configurable via `config.yml` (`input_encoding` and `output_encoding`).
 - **GPC Format:** Adheres to the ABO format (130 characters per line).
 - **Date Format:** Typically expects `DD.MM.YYYY` in input CSVs.
 - **Hashes:** Each record is assigned a unique hash based on its details to help identify duplicates during import.
@@ -40,11 +32,10 @@ A shell wrapper that handles encoding conversion.
 
 ### Prerequisites
 - Ruby installed on the system.
-- `iconv` utility (usually present on Linux/macOS) for the shell script.
 
 ### Running Tests
-There are no formal test suites (e.g., RSpec/Minitest). Verification is typically done by running the scripts against sample CSV files and checking the resulting `.gpc` output.
+Use the `run_tests.rb` script to verify the conversion logic against existing `.csv` and `.gpc` file pairs.
+- **Usage:** `ruby run_tests.rb`
 
 ## TODO / Known Issues
-- The scripts often use hardcoded "USER SETUP" values; consider moving these to command-line arguments or a config file.
-- `csv2gpc.sh` limitation regarding filenames with spaces.
+- Currently limited to banks with existing mappings in `config.yml`.

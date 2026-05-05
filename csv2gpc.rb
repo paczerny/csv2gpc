@@ -1,11 +1,7 @@
 #!/bin/ruby
 
 # Script converts bank statement from .csv to .gpc
-# Warning Script can't handle text before header of the csv file
-# User need to fill USER SETUP section for the specific bank
-# Supported banks are CSOB, KB, Moneta
-# Encoding of the input file must be UTF-8.
-# Use csv2gpc.sh to convert from from cp1250 and get result in the same encoding
+# Encoding and bank settings are handled via config.yml
 
 # -*- encoding : utf-8 -*-
 require 'date'
@@ -46,11 +42,19 @@ field_ids = field_ids.transform_keys(&:to_sym)
 
 nazev_uctu = current_setup['account_name']
 cislo_uctu = current_setup['account_number']
+input_enc = current_setup['input_encoding'] || 'UTF-8'
+output_enc = current_setup['output_encoding'] || 'CP1250'
 
 # Read and parse csv file
 puts "IN file #{file_in}, OUT file #{file_out}"
 
-csv_text = File.read(file_in, mode: "rb:bom|utf-8")
+if input_enc.upcase == 'UTF-8'
+  csv_text = File.read(file_in, mode: "rb:bom|utf-8")
+else
+  # Read with specified encoding and convert to UTF-8 for processing
+  csv_text = File.read(file_in, mode: "rb:#{input_enc}:utf-8")
+end
+
 csv = CSV.parse(csv_text, :headers => true, :col_sep => ';')
 puts "Number of lines in csv: #{csv.length}"
 
@@ -154,7 +158,7 @@ if gpc_header.length != 130
 end
 
 
-f = File.open(file_out, 'w')
+f = File.open(file_out, "w:#{output_enc}")
 
 f.write gpc_header
 
