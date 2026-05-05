@@ -19,7 +19,16 @@ SRC_FILE_CZ=${BASE_NAME}-cz.csv
 DST_FILE_CZ=${BASE_NAME}-cz.gpc
 DST_FILE=${BASE_NAME}.gpc
 
-iconv -f "cp1250" -t "UTF-8" "${SRC_FILE}" -o "${SRC_FILE_CZ}"
+# Check if the file is already UTF-8
+ENCODING=$(file -b --mime-encoding "${SRC_FILE}")
+
+if [ "$ENCODING" == "utf-8" ] || [ "$ENCODING" == "us-ascii" ]; then
+    echo "File is already $ENCODING, copying to ${SRC_FILE_CZ}"
+    cp "${SRC_FILE}" "${SRC_FILE_CZ}"
+else
+    echo "Converting from cp1250 to UTF-8"
+    iconv -f "cp1250" -t "UTF-8" "${SRC_FILE}" -o "${SRC_FILE_CZ}"
+fi
 
 ./csv2gpc.rb ${SRC_FILE_CZ} ${DST_FILE_CZ}
 

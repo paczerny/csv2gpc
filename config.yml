@@ -1,0 +1,63 @@
+current_setup:
+  bank: Moneta
+  account_name: "UL COLOR S.R.O."
+  account_number: "43-9137840247"
+
+bank_formats:
+  CSOB:
+    nazev: 'název účtu'
+    cu: 'číslo účtu'
+    datum_operace: 'datum zaúčtování'
+    castka: 'částka platby'
+    mena: 'měna platby'
+    zustatek: 'zůstatek'
+    ks: 'konstantní symbol/kód poplatku'
+    vs: 'variabilní symbol/reference'
+    ss: 'specifický symbol'
+    oznaceni_operace: 'popis transakce'
+    nazev_protiuctu: 'protistrana'
+    protiucet: 'účet protistrany'
+    poznamka: 'poznámka'
+
+  KB:
+    datum_operace: 'Datum splatnosti'
+    castka: 'Částka'
+    mena: 'Originální měna'
+    zustatek: ''
+    ks: 'KS'
+    vs: 'VS'
+    ss: 'SS'
+    oznaceni_operace: 'Systémový popis'
+    nazev_protiuctu: 'Název protiúčtu'
+    protiucet: 'Protiúčet a kód banky'
+    poznamka: 'Popis příkazce'
+
+  Moneta:
+    cu: 'Číslo účtu'
+    datum_operace: 'Odesláno'
+    castka: 'Částka'
+    mena: 'Měna'
+    zustatek: ''
+    ks: 'Konstantní symbol'
+    vs: 'Variabilní Symbol'
+    ss: 'Specifický Symbol'
+    oznaceni_operace: 'Popis platby'
+    nazev_protiuctu: 'Název protiúčtu'
+    banka_protiuctu: 'Banka protiúčtu'
+    protiucet: 'Číslo protiúčtu'
+    poznamka: 'Poznámka'
+
+  Raiffeisenbank:
+    nazev: 'Název účtu'
+    cu: 'Číslo účtu'
+    datum_operace: 'Datum zaúčtování'
+    castka: 'Zaúčtovaná částka'
+    mena: 'Měna účtu'
+    zustatek: ''
+    ks: 'KS'
+    vs: 'VS'
+    ss: 'SS'
+    oznaceni_operace: 'Kategorie transakce'
+    nazev_protiuctu: 'Název protiúčtu'
+    protiucet: 'Číslo protiúčtu'
+    poznamka: 'Poznámka'

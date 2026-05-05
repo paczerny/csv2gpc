@@ -11,74 +11,46 @@
 require 'date'
 require 'digest/md5'
 require 'csv'
+require 'yaml'
 
 records = Array.new
 
-if ARGV.length != 2
-	puts "Usage: ruby csv2gpc infile_name.csv outfile_name.gpc"
+if ARGV.length < 2 || ARGV.length > 3
+	puts "Usage: ruby csv2gpc infile_name.csv outfile_name.gpc [config_file.yml]"
 	exit -1
 end
 
 file_in = ARGV[0]
 file_out = ARGV[1]
+config_path = ARGV[2] || 'config.yml'
 
-CSOB = {
-	:nazev => 'název účtu',
-	:cu => 'číslo účtu',
-	:datum_operace => 'datum zaúčtování',
-	:castka => 'částka platby',
-	:mena => 'měna platby',
-	:zustatek => 'zůstatek',
-	:ks => 'konstantní symbol/kód poplatku',
-	:vs => 'variabilní symbol/reference',
-	:ss => 'specifický symbol',
-	:oznaceni_operace => 'popis transakce',
-	:nazev_protiuctu => 'protistrana',
-	:protiucet => 'účet protistrany',
-	:poznamka => 'poznámka'
-}
+unless File.exist?(config_path)
+  puts "Config file not found: #{config_path}"
+  exit -1
+end
 
-KB = {
-	:datum_operace => 'Datum splatnosti',
-	:castka => 'Částka',
-	:mena => 'Originální měna',
-	:zustatek => '',
-	:ks => 'KS',
-	:vs => 'VS',
-	:ss => 'SS',
-	:oznaceni_operace => 'Identifikace transakce',
-	:nazev_protiuctu => 'Název protiúčtu',
-	:protiucet => 'Protiúčet a kód banky',
-	:poznamka => 'Popis příkazce'
-}
+config = YAML.load_file(config_path)
+current_setup = config['current_setup']
+bank_formats = config['bank_formats']
 
-Moneta = {
-	:cu => 'Číslo účtu',
-	:datum_operace => 'Odesláno',
-	:castka => 'Částka',
-	:mena => 'Měna',
-	:zustatek => '',
-	:ks => 'Konstantní symbol',
-	:vs => 'Variabilní Symbol',
-	:ss => 'Specifický Symbol',
-	:oznaceni_operace => 'Popis 1',
-	:nazev_protiuctu => 'Název protiúčtu',
-	:banka_protiuctu => 'Banka protiúčtu',
-	:protiucet => 'Číslo protiúčtu',
-	:poznamka => 'Poznámka'
-}
+bank_name = current_setup['bank']
+field_ids = bank_formats[bank_name]
 
-######## USER SETUP These lines must be set by user ###############
-field_ids = Moneta	# Specify the bank
+if field_ids.nil?
+  puts "Bank format not found in config: #{bank_name}"
+  exit -1
+end
 
-nazev_uctu = "UL COLOR S.R.O." # Use this if the csv doesn't containt the account name
-cislo_uctu = "43-9137840247"	# Use this if the csv doesn't containt the account number
-######## End of USER SETUP ###############
+# Convert string keys to symbols for compatibility with existing code
+field_ids = field_ids.transform_keys(&:to_sym)
+
+nazev_uctu = current_setup['account_name']
+cislo_uctu = current_setup['account_number']
 
 # Read and parse csv file
 puts "IN file #{file_in}, OUT file #{file_out}"
 
-csv_text = File.read(file_in)
+csv_text = File.read(file_in, mode: "rb:bom|utf-8")
 csv = CSV.parse(csv_text, :headers => true, :col_sep => ';')
 puts "Number of lines in csv: #{csv.length}"
 
@@ -86,9 +58,12 @@ csv.each do |row|
 	nazev_uctu = row[field_ids[:nazev]].strip unless field_ids[:nazev].nil?
 	cislo_uctu = row[field_ids[:cu]][/^([0-9]+)\/.*$/, 1] unless field_ids[:nazev].nil?
 
+	# pp row
+	# pp field_ids[:castka]
+	# pp row[field_ids[:castka]]
 	current_record = Hash.new
 	current_record[:datum_operace] = row[field_ids[:datum_operace]]
-	current_record[:castka] = row[field_ids[:castka]].strip.gsub(/\\/, '')
+	current_record[:castka] = row[field_ids[:castka]].strip.gsub(/\\/, '').gsub(/ /, '')
 	current_record[:mena] = row[field_ids[:mena]] || 'CZK'
 	current_record[:zustatek] = row[field_ids[:zustatek]] || ''
 	current_record[:ks] = row[field_ids[:ks]] || '0'
@@ -97,7 +72,7 @@ csv.each do |row|
 	current_record[:oznaceni_operace] = row[field_ids[:oznaceni_operace]] || ''
 	current_record[:nazev_protiuctu] = row[field_ids[:nazev_protiuctu]] || ''
 	current_record[:protiucet] = row[field_ids[:protiucet]] || ''
-	if current_record[:protiucet] == '0' then
+	if current_record[:protiucet] == '0' || current_record[:protiucet] == '' then
 		current_record[:protiucet] = ''
 	else
 		current_record[:protiucet] = current_record[:protiucet] + '/' + row[field_ids[:banka_protiuctu]] unless field_ids[:banka_protiuctu].nil?
@@ -116,7 +91,7 @@ newest = nil
 records.each do |record|
 	#record[:poznamka] = record[:poznamka].gsub /\s+/, ' '
 
-	#record[:date] = Date.strptime record[:datum_operace], '%d/%m/%Y'
+	#record[:date] = Date.strptime record[:datum_operace], '%m/%d/%Y'
 	record[:date] = Date.strptime record[:datum_operace], '%d.%m.%Y'
 
 	# puts '---- Debug output ----'
